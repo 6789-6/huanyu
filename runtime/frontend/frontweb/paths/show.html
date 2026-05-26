@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>唤语 - 单字闯关评测</title>
+  <link rel="stylesheet" href="../static/font-awesome//4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="../app/css/huanyu-app.css">
+  <link rel="stylesheet" href="../app/css/huanyu-paths.css">
+</head>
+<body class="huanyu-app huanyu-paths">
+  <header class="app-topbar">
+    <div class="app-shell app-nav">
+      <a class="brand" href="../index.html"><img src="../img/Logogo.png" alt="唤语"><span>唤语</span></a>
+      <nav class="nav-links">
+        <a href="../index.html">首页</a><a href="../translate.html">手语翻译</a><a class="active" href="index.html">闯关学习</a>
+        <a href="../developer/index.html">学习课程</a><a href="../questions/index.html">社区讨论</a><a href="../user/13/study.html">学习记录</a>
+      </nav>
+      <a class="nav-action" href="index.html">关卡列表</a>
+    </div>
+  </header>
+  <main class="page-main app-shell">
+    <section class="page-title">
+      <p class="eyebrow">Single Word Challenge</p>
+      <h1 id="task-title">关卡加载中</h1>
+      <p id="run-status">请选择或录制一段视频开始评测。</p>
+    </section>
+    <section class="hy-workspace">
+      <aside class="panel"><div class="panel-heading"><span>关卡</span><strong>目标</strong></div><div id="level-list" class="hy-level-list"></div></aside>
+      <section class="panel hy-camera">
+        <div class="hy-video-frame"><video id="camera-feed" autoplay muted playsinline></video><div class="hy-overlay-score" id="score-value">--</div></div>
+        <div class="hy-capture-status" aria-live="polite">
+          <div>
+            <span>采集状态</span>
+            <strong id="capture-status">准备录制</strong>
+          </div>
+          <div>
+            <span>录制时长</span>
+            <strong id="capture-timer">00:00</strong>
+          </div>
+          <div>
+            <span>提交进度</span>
+            <strong id="capture-progress">待提交</strong>
+          </div>
+        </div>
+        <div class="hy-keypoint-panel">
+          <div class="hy-keypoint-head">
+            <span>手势关键点</span>
+            <strong id="keypoint-status">等待识别</strong>
+          </div>
+          <canvas id="keypoint-canvas" width="640" height="360" aria-label="识别手势关键点"></canvas>
+          <div class="hy-keypoint-meta">
+            <span id="keypoint-source">未生成</span>
+            <span>双手 21 点骨架</span>
+          </div>
+        </div>
+        <div class="hy-controls">
+          <button class="hy-button secondary" id="start-camera-btn" type="button">打开摄像头</button>
+          <button class="hy-button secondary" id="record-btn" type="button">开始录制</button>
+          <label class="hy-file"><input id="video-file" type="file" accept="video/*"><span id="file-label">选择视频</span></label>
+          <button class="hy-button" id="submit-btn" type="button">提交评测</button>
+        </div>
+      </section>
+      <aside class="panel hy-result">
+        <div class="panel-heading"><span>评测结果</span><strong id="pass-state">--</strong></div>
+        <div class="hy-result-box"><label>目标中文</label><strong id="target-chinese">--</strong></div>
+        <div class="hy-result-box"><label>目标 gloss</label><strong id="target-gloss">--</strong></div>
+        <div class="hy-result-box"><label>识别中文/描述</label><strong id="recognized-text">--</strong></div>
+        <div class="hy-result-box"><label>E2E gloss</label><strong id="recognized-gloss">--</strong></div>
+        <div class="hy-result-box"><label>模型</label><strong id="model-name">--</strong></div>
+        <div class="hy-result-box"><label>通过标准</label><strong id="pass-score">--</strong></div>
+        <p id="feedback">上传或录制一段手语视频后，系统会用 E2E 模型输出 gloss 并给出闯关评分。</p>
+      </aside>
+    </section>
+  </main>
+  <footer class="app-footer">Copyright @2025-2026 唤语</footer>
+  <script src="../app/js/huanyu-auth.js"></script>
+  <script src="../app/js/huanyu-paths.js"></script>
+</body>
+</html>

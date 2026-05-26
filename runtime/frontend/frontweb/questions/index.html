@@ -1,0 +1,312 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>唤语 - 社区讨论</title>
+  <link rel="stylesheet" href="../static/font-awesome//4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="../app/css/huanyu-app.css">
+</head>
+<body class="huanyu-app">
+  <header class="app-topbar">
+    <div class="app-shell app-nav">
+      <a class="brand" href="../index.html"><img src="../img/Logogo.png" alt="唤语"><span>唤语</span></a>
+      <nav class="nav-links">
+        <a href="../index.html">首页</a><a href="../translate.html">手语翻译</a><a href="../paths/index.html">闯关学习</a>
+        <a href="../developer/index.html">学习课程</a><a class="active" href="index.html">社区讨论</a><a href="../user/13/study.html">学习记录</a>
+      </nav>
+      <a class="nav-action" href="show.html">问题详情</a>
+    </div>
+  </header>
+
+  <main class="page-main app-shell">
+    <section class="page-title">
+      <p class="eyebrow">Community</p>
+      <h1>社区讨论</h1>
+      <p>和大家交流手语学习心得、反馈识别问题、展示学习成果。</p>
+    </section>
+
+    <div class="community-action-bar">
+      <button class="button" id="btn-new-post"><i class="fa fa-pencil"></i> 发起讨论</button>
+      <div class="community-category-tabs" id="category-tabs">
+        <button class="community-category-tab is-active" data-category="">全部</button>
+        <button class="community-category-tab" data-category="bug">问题反馈</button>
+        <button class="community-category-tab" data-category="discussion">讨论交流</button>
+        <button class="community-category-tab" data-category="showcase">学习展示</button>
+      </div>
+    </div>
+
+    <section id="post-list" aria-live="polite"></section>
+
+    <div class="community-load-more" id="load-more-block" hidden>
+      <button class="button ghost-button" id="btn-load-more">加载更多</button>
+    </div>
+
+    <div class="community-empty" id="empty-state" hidden>
+      <h3>还没有帖子</h3>
+      <p>成为第一个发起讨论的人吧！分享你的学习心得、反馈识别问题，或者展示闯关成果。</p>
+      <button class="button" id="btn-empty-post"><i class="fa fa-plus"></i> 发起第一个讨论</button>
+    </div>
+  </main>
+
+  <!-- New Post Modal -->
+  <div class="community-modal-overlay" id="post-modal" hidden>
+    <div class="community-modal">
+      <h2>发起讨论</h2>
+      <label for="post-title">标题</label>
+      <input id="post-title" type="text" maxlength="120" placeholder="简明扼要地描述你的问题或话题">
+      <label for="post-content">内容</label>
+      <textarea id="post-content" maxlength="5000" placeholder="详细描述你的问题或想法..."></textarea>
+      <label for="post-category">分类</label>
+      <select id="post-category">
+        <option value="discussion">讨论交流</option>
+        <option value="bug">问题反馈</option>
+        <option value="showcase">学习展示</option>
+      </select>
+      <div class="community-modal-actions">
+        <button class="button ghost-button" id="btn-modal-close">取消</button>
+        <button class="button" id="btn-post-submit"><i class="fa fa-send"></i> 发布</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="app-footer">Copyright @2025-2026 唤语</footer>
+
+  <script src="../app/js/huanyu-auth.js"></script>
+  <script>
+  (function() {
+    var API_BASE = (function() {
+      var host = window.location.hostname;
+      if (!host || host === '127.0.0.1' || host === 'localhost') return 'http://127.0.0.1:5000';
+      return window.location.origin;
+    })();
+
+    var STORAGE_KEY = 'huanyu-session';
+    var currentCategory = '';
+    var offset = 0;
+    var LIMIT = 15;
+    var hasMore = false;
+
+    function $(id) { return document.getElementById(id); }
+    function escapeHtml(v) {
+      return String(v||'').replace(/[&<>"']/g, function(ch) {
+        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+      });
+    }
+
+    function getAuthor() {
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          var u = JSON.parse(raw);
+          if (u.user && u.user.username) return { account: u.user.username, identity: u.user.username === 'root' ? 'admin' : 'user' };
+        }
+      } catch(e) {}
+      return null;
+    }
+
+    function ensureAuthor() {
+      if (!getAuthor()) {
+        window.location.href = '../login.html?next=' + encodeURIComponent('questions/index.html');
+        return null;
+      }
+      return getAuthor();
+    }
+
+    function timeAgo(iso) {
+      var then = new Date(iso).getTime();
+      var now = Date.now();
+      var diff = Math.floor((now - then) / 1000);
+      if (diff < 60) return '刚刚';
+      if (diff < 3600) return Math.floor(diff / 60) + '分钟前';
+      if (diff < 86400) return Math.floor(diff / 3600) + '小时前';
+      if (diff < 172800) return '昨天 ' + new Date(iso).toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'});
+      if (diff < 2592000) return Math.floor(diff / 86400) + '天前';
+      return new Date(iso).toLocaleDateString('zh-CN');
+    }
+
+    function fetchJson(path, opts) {
+      opts = opts || {};
+      opts.headers = window.HUANYU_AUTH ? window.HUANYU_AUTH.authHeaders(opts.headers || {}) : (opts.headers || {});
+      return fetch(API_BASE + path, opts).then(function(r) {
+        return r.text().then(function(body) {
+          var p = {};
+          if (body) {
+            try { p = JSON.parse(body); } catch(e) { throw new Error(body || 'HTTP '+r.status); }
+          }
+          if (!r.ok || p.code >= 400) throw new Error(p.message || 'HTTP '+r.status);
+          return p;
+        });
+      });
+    }
+
+    function postJson(path, data) {
+      return fetchJson(path, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data||{}) });
+    }
+
+    window._deletePost = function(btn) {
+      if (!ensureAuthor()) return;
+      var postId = btn.getAttribute('data-post-id');
+      if (!confirm('确定删除这条帖子吗？删除后无法恢复。')) return;
+
+      fetchJson('/api/community/posts/' + encodeURIComponent(postId) + '?account=' + encodeURIComponent(getAuthor().account), { method: 'DELETE' })
+        .then(function() {
+          toast('已删除', 'success');
+          loadPosts(true);
+        })
+        .catch(function(err) {
+          toast('删除失败：' + err.message, 'error');
+        });
+    };
+
+    function toast(text, tone) {
+      var el = document.createElement('div');
+      el.className = 'community-toast is-' + (tone||'success');
+      el.textContent = text;
+      document.body.appendChild(el);
+      setTimeout(function() { el.remove(); }, 2000);
+    }
+
+    function renderPosts(items) {
+      var list = $('post-list');
+      if (!items.length && offset === 0) {
+        list.innerHTML = '';
+        $('empty-state').hidden = false;
+        $('load-more-block').hidden = true;
+        return;
+      }
+      $('empty-state').hidden = true;
+
+      var currentAuthor = getAuthor();
+      var currentAccount = currentAuthor ? currentAuthor.account : '';
+
+      var html = items.map(function(p) {
+        var tagClass = '';
+        var tagText = p.category === 'bug' ? '问题反馈' : p.category === 'showcase' ? '学习展示' : '讨论交流';
+        if (p.category === 'bug') tagClass = 'cat-bug';
+        else if (p.category === 'showcase') tagClass = 'cat-showcase';
+        else tagClass = 'cat-discussion';
+
+        var authorName = (p.author && p.author.account) ? p.author.account.replace(/@.*/, '') : '匿名';
+        var isOwner = currentAccount && p.author && (p.author.account === currentAccount || currentAccount === 'root');
+        var deleteBtn = isOwner ? '<button class="community-card-delete" data-post-id="' + escapeHtml(p.id) + '" onclick="event.preventDefault();event.stopPropagation();window._deletePost(this)" title="删除帖子"><i class="fa fa-trash-o"></i></button>' : '';
+
+        return '<a class="community-post-card" href="show.html?id=' + escapeHtml(p.id) + '">' +
+          '<h3 class="community-post-card-title">' + escapeHtml(p.title) + '</h3>' +
+          '<p class="community-post-card-excerpt">' + escapeHtml(p.content.slice(0, 160)) + '</p>' +
+          '<div class="community-post-meta">' +
+            '<span class="meta-author">' + escapeHtml(authorName) + '</span>' +
+            '<span class="meta-dot">·</span>' +
+            '<span>' + timeAgo(p.createdAt) + '</span>' +
+            '<span class="meta-dot">·</span>' +
+            '<span>' + (p.replyCount||0) + ' 回复</span>' +
+            '<span class="community-category-tag ' + tagClass + '">' + tagText + '</span>' +
+          '</div>' +
+          deleteBtn +
+        '</a>';
+      }).join('');
+
+      if (offset === 0) {
+        list.innerHTML = html;
+      } else {
+        list.insertAdjacentHTML('beforeend', html);
+      }
+      $('load-more-block').hidden = !hasMore;
+    }
+
+    function loadPosts(reset) {
+      if (reset) offset = 0;
+      var qs = '?limit=' + LIMIT + '&offset=' + offset;
+      if (currentCategory) qs += '&category=' + encodeURIComponent(currentCategory);
+
+      var list = $('post-list');
+      if (reset) list.innerHTML = '<p style="text-align:center;color:var(--muted);padding:32px">加载中...</p>';
+
+      return fetchJson('/api/community/posts' + qs).then(function(payload) {
+        var data = payload.data || {};
+        var items = data.items || [];
+        hasMore = (offset + items.length) < (data.total || 0);
+        renderPosts(items);
+        if (items.length) offset += items.length;
+      }).catch(function(err) {
+        if (reset) list.innerHTML = '<div class="community-empty"><h3>加载失败</h3><p>' + escapeHtml(err.message) + '</p><button class="button" onclick="location.reload()">重试</button></div>';
+      });
+    }
+
+    function switchCategory(cat) {
+      currentCategory = cat;
+      offset = 0;
+      Array.prototype.forEach.call($('category-tabs').querySelectorAll('.community-category-tab'), function(btn) {
+        btn.classList.toggle('is-active', btn.getAttribute('data-category') === cat);
+      });
+      loadPosts(true);
+    }
+
+    function openModal() {
+      if (!ensureAuthor()) return;
+      $('post-modal').hidden = false;
+      $('post-title').value = '';
+      $('post-content').value = '';
+      $('post-title').focus();
+    }
+
+    function closeModal() {
+      $('post-modal').hidden = true;
+    }
+
+    function submitPost() {
+      var author = ensureAuthor();
+      if (!author) return;
+      var title = ($('post-title').value||'').trim();
+      var content = ($('post-content').value||'').trim();
+      var category = $('post-category').value;
+
+      if (!title) { toast('请输入标题', 'error'); return; }
+      if (!content) { toast('请输入内容', 'error'); return; }
+
+      var btn = $('btn-post-submit');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 发布中';
+
+      postJson('/api/community/posts', { title:title, content:content, category:category, author:author })
+        .then(function() {
+          closeModal();
+          toast('发布成功！', 'success');
+          loadPosts(true);
+        })
+        .catch(function(err) {
+          toast('发布失败：' + err.message, 'error');
+        })
+        .then(function() {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa fa-send"></i> 发布';
+        });
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      $('category-tabs').addEventListener('click', function(e) {
+        var btn = e.target.closest('.community-category-tab');
+        if (!btn) return;
+        switchCategory(btn.getAttribute('data-category') || '');
+      });
+
+      $('btn-new-post').addEventListener('click', openModal);
+      $('btn-empty-post').addEventListener('click', openModal);
+      $('btn-modal-close').addEventListener('click', closeModal);
+      $('btn-post-submit').addEventListener('click', submitPost);
+      $('btn-load-more').addEventListener('click', function() { loadPosts(false); });
+
+      $('post-modal').addEventListener('click', function(e) {
+        if (e.target === $('post-modal')) closeModal();
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !$('post-modal').hidden) closeModal();
+      });
+
+      loadPosts(true);
+    });
+  })();
+  </script>
+</body>
+</html>

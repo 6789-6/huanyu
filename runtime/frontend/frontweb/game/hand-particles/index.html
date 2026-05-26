@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sci-Fi Dual Hand Particles</title>
+    <link rel="icon" href="./public/favicon.svg" />
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <a class="hy-game-return" href="../../index.html">返回唤语</a>
+    <canvas id="scene"></canvas>
+    <video id="webcam" autoplay playsinline muted></video>
+
+    <main class="hud">
+      <section class="panel glass" id="hudPanel">
+        <button class="hud-toggle" id="hudToggle" type="button" aria-controls="hudPanel" aria-expanded="true">HIDE</button>
+        <div class="brand">
+          <span class="pulse-dot"></span>
+          <div>
+            <h1>DUAL HAND NEBULA</h1>
+            <p>Real-time gesture field / sci-fi particle interface</p>
+          </div>
+        </div>
+
+        <div class="status-grid">
+          <div>
+            <span>模型状态</span>
+            <b id="status">等待启动</b>
+          </div>
+          <div>
+            <span>FPS</span>
+            <b id="fps">--</b>
+          </div>
+          <div>
+            <span>手部数量</span>
+            <b id="hands">0</b>
+          </div>
+          <div>
+            <span>粒子数量</span>
+            <b id="particles">0</b>
+          </div>
+        </div>
+
+        <div class="gesture-card">
+          <span>当前手势</span>
+          <strong id="gesture">--</strong>
+          <small id="mode">星云待机</small>
+        </div>
+
+        <div class="control-row">
+          <label>
+            画质档位
+            <select id="quality">
+              <option value="smooth">流畅 / 低负载</option>
+              <option value="balanced" selected>均衡 / 推荐</option>
+              <option value="cinematic">电影感 / 高画质</option>
+              <option value="showcase">展示级 / 性能好再开</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="control-row">
+          <label>
+            特效强度
+            <input id="intensity" type="range" min="0.6" max="1.5" step="0.05" value="1" />
+          </label>
+        </div>
+
+        <div class="toggles">
+          <label><input id="showSkeleton" type="checkbox" checked /> 显示手部骨架</label>
+          <label><input id="showCamera" type="checkbox" checked /> 显示摄像头小窗</label>
+          <label><input id="autoTune" type="checkbox" checked /> 自动降载保帧率</label>
+        </div>
+
+        <button id="startBtn">启动双手识别</button>
+
+        <p class="hint">
+          双手爱心 = 跳动爱心星云；双指相对 = 激光桥；双掌张开 = 传送门；双拳 = 引力核心。建议使用 Chrome / Edge。
+        </p>
+      </section>
+
+      <section class="gesture-help glass">
+        <h2>Gesture Map</h2>
+        <div class="gesture-list">
+          <span>张开 ✦ 超新星</span>
+          <span>握拳 ✦ 能量核心</span>
+          <span>捏合 ✦ 黑洞</span>
+          <span>剪刀 ✦ 双螺旋</span>
+          <span>OK ✦ 星门</span>
+          <span>摇滚 ✦ 闪电</span>
+          <span>点赞 ✦ 喷泉</span>
+          <span>三指 ✦ 三角星阵</span>
+        </div>
+      </section>
+    </main>
+
+    <div class="corner top-left"></div>
+    <div class="corner bottom-right"></div>
+    <div class="vignette"></div>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

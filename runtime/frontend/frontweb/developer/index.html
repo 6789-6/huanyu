@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>唤语 - 手语学习课程</title>
+  <link rel="stylesheet" href="../static/font-awesome//4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="../app/css/huanyu-app.css">
+</head>
+<body class="huanyu-app">
+  <header class="app-topbar">
+    <div class="app-shell app-nav">
+      <a class="brand" href="../index.html"><img src="../img/Logogo.png" alt="唤语"><span>唤语</span></a>
+      <nav class="nav-links" aria-label="主导航">
+        <a href="../index.html">首页</a>
+        <a href="../translate.html">手语翻译</a>
+        <a href="../paths/index.html">闯关学习</a>
+        <a class="active" href="index.html">学习课程</a>
+        <a href="../questions/index.html">社区讨论</a>
+        <a href="../user/13/study.html">学习记录</a>
+      </nav>
+      <a class="nav-action" href="../paths/index.html">练习关卡</a>
+    </div>
+  </header>
+
+  <main class="page-main app-shell course-shell">
+    <section class="page-title course-title">
+      <p class="eyebrow">CE-CSL Dataset</p>
+      <h1>看训练集视频学习手语表达</h1>
+      <p>每个样本都来自手语训练集：先看标准视频，再对照中文意思和 gloss 拆解动作顺序。</p>
+    </section>
+
+    <section class="course-toolbar" aria-label="课程筛选">
+      <div class="course-tabs" role="tablist" aria-label="数据集切换">
+        <button class="active" type="button" data-split="dev">开发集</button>
+        <button type="button" data-split="train">训练集</button>
+        <button type="button" data-split="test">测试集</button>
+      </div>
+      <form id="course-search-form" class="course-search">
+        <i class="fa fa-search" aria-hidden="true"></i>
+        <input id="course-search-input" type="search" placeholder="搜索中文、gloss、编号">
+        <button type="submit">搜索</button>
+      </form>
+    </section>
+
+    <section class="course-overview">
+      <div>
+        <span>当前数据集</span>
+        <strong id="course-split-label">dev</strong>
+      </div>
+      <div>
+        <span>已加载样本</span>
+        <strong id="course-count-label">0</strong>
+      </div>
+      <div>
+        <span>数据源</span>
+        <strong id="course-source-label">等待连接</strong>
+      </div>
+    </section>
+
+    <section id="course-grid" class="course-grid" aria-live="polite">
+      <article class="course-loading">正在加载训练集课程...</article>
+    </section>
+
+    <div class="course-footer-actions">
+      <button id="course-load-more" class="ghost-button" type="button">加载更多样本</button>
+      <a class="button secondary" href="../translate.html"><i class="fa fa-upload"></i> 上传自拍视频</a>
+    </div>
+  </main>
+
+  <footer class="app-footer">Copyright @2025-2026 唤语</footer>
+  <script src="../app/js/huanyu-auth.js"></script>
+  <script src="../app/js/huanyu-courses.js"></script>
+</body>
+</html>

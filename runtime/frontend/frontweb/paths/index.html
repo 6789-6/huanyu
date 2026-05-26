@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>唤语 - 单字闯关学习</title>
+  <link rel="stylesheet" href="../static/font-awesome//4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="../app/css/huanyu-app.css">
+  <link rel="stylesheet" href="../app/css/huanyu-paths.css">
+</head>
+<body class="huanyu-app huanyu-paths">
+  <header class="app-topbar">
+    <div class="app-shell app-nav">
+      <a class="brand" href="../index.html"><img src="../img/Logogo.png" alt="唤语"><span>唤语</span></a>
+      <nav class="nav-links">
+        <a href="../index.html">首页</a><a href="../translate.html">手语翻译</a><a class="active" href="index.html">闯关学习</a>
+        <a href="../developer/index.html">学习课程</a><a href="../questions/index.html">社区讨论</a><a href="../user/13/study.html">学习记录</a>
+      </nav>
+      <a class="nav-action" href="show.html">开始闯关</a>
+    </div>
+  </header>
+  <main class="page-main app-shell">
+    <section class="hero-panel">
+      <div class="hero-copy">
+        <p class="eyebrow">E2E Sign Challenge</p>
+        <h1>单字手语闯关训练</h1>
+        <p class="lead">120 个常用单字关卡，录制或上传视频后系统会识别 gloss、评分，并在结果中呈现手势关键点骨架。</p>
+      </div>
+      <aside class="panel">
+        <div class="panel-heading"><span>模型状态</span><strong>实时读取</strong></div>
+        <div id="model-status" class="hy-status-grid"><div class="hy-status-item"><span>正在检查</span><span class="hy-pill warn">Loading</span></div></div>
+      </aside>
+    </section>
+    <section><div class="hy-level-grid" id="level-grid"></div></section>
+  </main>
+  <footer class="app-footer">Copyright @2025-2026 唤语</footer>
+  <script src="../app/js/huanyu-auth.js"></script>
+  <script src="../app/js/huanyu-paths.js"></script>
+</body>
+</html>

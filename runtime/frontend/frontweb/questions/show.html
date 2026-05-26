@@ -1,0 +1,274 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>唤语 - 帖子详情</title>
+  <link rel="stylesheet" href="../static/font-awesome//4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="../app/css/huanyu-app.css">
+</head>
+<body class="huanyu-app">
+  <header class="app-topbar">
+    <div class="app-shell app-nav">
+      <a class="brand" href="../index.html"><img src="../img/Logogo.png" alt="唤语"><span>唤语</span></a>
+      <nav class="nav-links">
+        <a href="../index.html">首页</a><a href="../translate.html">手语翻译</a><a href="../paths/index.html">闯关学习</a>
+        <a href="../developer/index.html">学习课程</a><a class="active" href="index.html">社区讨论</a><a href="../user/13/study.html">学习记录</a>
+      </nav>
+      <a class="nav-action" href="index.html"><i class="fa fa-arrow-left"></i> 返回社区</a>
+    </div>
+  </header>
+
+  <main class="page-main app-shell" id="main-content">
+    <p style="text-align:center;color:var(--muted);padding:48px" id="loading-text">加载中...</p>
+  </main>
+
+  <footer class="app-footer">Copyright @2025-2026 唤语</footer>
+
+  <script src="../app/js/huanyu-auth.js"></script>
+  <script>
+  (function() {
+    var API_BASE = (function() {
+      var host = window.location.hostname;
+      if (!host || host === '127.0.0.1' || host === 'localhost') return 'http://127.0.0.1:5000';
+      return window.location.origin;
+    })();
+
+    var STORAGE_KEY = 'huanyu-session';
+    var postId = new URLSearchParams(window.location.search).get('id');
+    var replyToId = null;
+    var replyToAuthor = null;
+
+    function $(id) { return document.getElementById(id); }
+    function escapeHtml(v) {
+      return String(v||'').replace(/[&<>"']/g, function(ch) {
+        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+      });
+    }
+
+    function getAuthor() {
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          var u = JSON.parse(raw);
+          if (u.user && u.user.username) return { account: u.user.username, identity: u.user.username === 'root' ? 'admin' : 'user' };
+        }
+      } catch(e) {}
+      return null;
+    }
+
+    function ensureAuthor() {
+      if (!getAuthor()) {
+        window.location.href = '../login.html?next=' + encodeURIComponent('questions/show.html' + window.location.search);
+        return null;
+      }
+      return getAuthor();
+    }
+
+    function timeAgo(iso) {
+      var then = new Date(iso).getTime();
+      var now = Date.now();
+      var diff = Math.floor((now - then) / 1000);
+      if (diff < 60) return '刚刚';
+      if (diff < 3600) return Math.floor(diff / 60) + '分钟前';
+      if (diff < 86400) return Math.floor(diff / 3600) + '小时前';
+      if (diff < 172800) return '昨天 ' + new Date(iso).toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'});
+      if (diff < 2592000) return Math.floor(diff / 86400) + '天前';
+      return new Date(iso).toLocaleDateString('zh-CN');
+    }
+
+    function fetchJson(path, opts) {
+      opts = opts || {};
+      opts.headers = window.HUANYU_AUTH ? window.HUANYU_AUTH.authHeaders(opts.headers || {}) : (opts.headers || {});
+      return fetch(API_BASE + path, opts).then(function(r) {
+        return r.text().then(function(body) {
+          var p = {};
+          if (body) {
+            try { p = JSON.parse(body); } catch(e) { throw new Error(body || 'HTTP '+r.status); }
+          }
+          if (!r.ok || p.code >= 400) throw new Error(p.message || 'HTTP '+r.status);
+          return p;
+        });
+      });
+    }
+
+    function postJson(path, data) {
+      return fetchJson(path, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data||{}) });
+    }
+
+    function toast(text, tone) {
+      var el = document.createElement('div');
+      el.className = 'community-toast is-' + (tone||'success');
+      el.textContent = text;
+      document.body.appendChild(el);
+      setTimeout(function() { el.remove(); }, 2000);
+    }
+
+    function clearReplyTarget() {
+      replyToId = null;
+      replyToAuthor = null;
+      var toastEl = $('reply-toast');
+      if (toastEl) toastEl.innerHTML = '';
+      var ta = $('reply-content');
+      if (ta) ta.placeholder = '写下你的回复...';
+    }
+
+    function setReplyTarget(replyId, authorName) {
+      replyToId = replyId;
+      replyToAuthor = authorName;
+      var toastEl = $('reply-toast');
+      if (toastEl) toastEl.innerHTML = '回复 <strong>' + escapeHtml(authorName) + '</strong> <button type="button" class="button ghost-button" style="font-size:11px;padding:2px 8px;margin-left:4px" onclick="window._clearReply()">取消</button>';
+      var ta = $('reply-content');
+      if (ta) {
+        ta.placeholder = '回复 ' + authorName + '...';
+        ta.focus();
+      }
+    }
+
+    window._clearReply = function() { clearReplyTarget(); };
+
+    function renderPost(post) {
+      var tagClass = '';
+      var tagText = post.category === 'bug' ? '问题反馈' : post.category === 'showcase' ? '学习展示' : '讨论交流';
+      if (post.category === 'bug') tagClass = 'cat-bug';
+      else if (post.category === 'showcase') tagClass = 'cat-showcase';
+      else tagClass = 'cat-discussion';
+
+      var authorName = (post.author && post.author.account) ? post.author.account.replace(/@.*/, '') : '匿名';
+      var currentAuthor = getAuthor();
+      var isOwner = currentAuthor && post.author && (post.author.account === currentAuthor.account || currentAuthor.account === 'root');
+      var deleteBtn = isOwner ? '<button class="button ghost-button" id="btn-delete-post" style="margin-left:12px;font-size:12px;color:var(--red);padding:4px 12px"><i class="fa fa-trash-o"></i> 删除帖子</button>' : '';
+
+      var html = '<section>';
+      html += '<div class="community-detail-header">';
+      html += '<span class="community-category-tag ' + tagClass + '">' + tagText + '</span>';
+      html += '<h1>' + escapeHtml(post.title) + deleteBtn + '</h1>';
+      html += '<div class="community-post-meta">';
+      html += '<span class="meta-author">' + escapeHtml(authorName) + '</span>';
+      html += '<span class="meta-dot">·</span>';
+      html += '<span>' + timeAgo(post.createdAt) + '</span>';
+      html += '</div></div>';
+      html += '<div class="community-detail-body">' + escapeHtml(post.content) + '</div>';
+      html += '</section>';
+
+      var replies = post.replies || [];
+      html += '<section class="community-reply-section">';
+      html += '<h3>回复（' + replies.length + '）</h3>';
+
+      if (replies.length === 0) {
+        html += '<p style="color:var(--muted);font-size:14px">还没有回复，来写第一条回复吧。</p>';
+      } else {
+        html += replies.map(function(r) {
+          var rAuthor = (r.author && r.author.account) ? r.author.account.replace(/@.*/, '') : '匿名';
+          var nested = r.replyTo ? ' is-nested' : '';
+          var replyToBadge = r.replyTo ? '<span style="font-size:11px;color:var(--muted)">回复了某条留言</span>' : '';
+          return '<div class="community-reply-card' + nested + '">' +
+            '<p class="reply-content">' + escapeHtml(r.content) + '</p>' +
+            '<div class="community-post-meta" style="margin-bottom:6px">' +
+              '<span class="meta-author">' + escapeHtml(rAuthor) + '</span>' +
+              '<span class="meta-dot">·</span>' +
+              '<span>' + timeAgo(r.createdAt) + '</span>' +
+              ' ' + replyToBadge +
+            '</div>' +
+            '<div class="reply-actions">' +
+              '<button type="button" data-reply-id="' + escapeHtml(r.id) + '" data-reply-author="' + escapeHtml(rAuthor) + '" onclick="window._onReplyClick(this)"><i class="fa fa-reply"></i> 回复</button>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+      }
+
+      html += '<div class="community-reply-form" id="reply-form-block">';
+      html += '<textarea id="reply-content" placeholder="写下你的回复..."></textarea>';
+      html += '<div class="reply-form-actions">';
+      html += '<span class="community-reply-toast" id="reply-toast"></span>';
+      html += '<button class="button" id="btn-reply-submit"><i class="fa fa-send"></i> 发表回复</button>';
+      html += '</div></div>';
+      html += '</section>';
+
+      $('main-content').innerHTML = html;
+
+      $('btn-reply-submit').addEventListener('click', submitReply);
+      var deletePostBtn = $('btn-delete-post');
+      if (deletePostBtn) deletePostBtn.addEventListener('click', deletePost);
+    }
+
+    function deletePost() {
+      if (!confirm('确定删除这条帖子吗？删除后无法恢复。')) return;
+
+      var btn = $('btn-delete-post');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 删除中';
+
+      fetchJson('/api/community/posts/' + encodeURIComponent(postId) + '?account=' + encodeURIComponent(getAuthor().account), { method: 'DELETE' })
+        .then(function() {
+          toast('已删除');
+          setTimeout(function() { window.location.href = 'index.html'; }, 400);
+        })
+        .catch(function(err) {
+          toast('删除失败：' + err.message, 'error');
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa fa-trash-o"></i> 删除帖子';
+        });
+    }
+
+    function submitReply() {
+      var author = ensureAuthor();
+      if (!author) return;
+      var content = ($('reply-content') ? $('reply-content').value : '').trim();
+      if (!content) { toast('请输入回复内容', 'error'); return; }
+
+      var btn = $('btn-reply-submit');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 发送中';
+
+      var body = { content: content, author: author };
+      if (replyToId) body.replyTo = replyToId;
+
+      postJson('/api/community/posts/' + encodeURIComponent(postId) + '/replies', body)
+        .then(function() {
+          $('reply-content').value = '';
+          clearReplyTarget();
+          toast('回复成功！', 'success');
+          loadPost();
+        })
+        .catch(function(err) {
+          toast('回复失败：' + err.message, 'error');
+        })
+        .then(function() {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa fa-send"></i> 发表回复';
+        });
+    }
+
+    window._onReplyClick = function(btn) {
+      if (!ensureAuthor()) return;
+      var replyId = btn.getAttribute('data-reply-id');
+      var authorName = btn.getAttribute('data-reply-author');
+      setReplyTarget(replyId, authorName);
+      $('reply-content').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    function loadPost() {
+      if (!postId) {
+        $('main-content').innerHTML = '<div class="community-empty"><h3>缺少帖子 ID</h3><p>请从社区首页点击帖子进入。</p><a class="button" href="index.html">返回社区</a></div>';
+        return;
+      }
+      var loadingEl = $('loading-text');
+      if (loadingEl) loadingEl.hidden = false;
+
+      fetchJson('/api/community/posts/' + encodeURIComponent(postId))
+        .then(function(payload) {
+          renderPost(payload.data);
+        })
+        .catch(function(err) {
+          $('main-content').innerHTML = '<div class="community-empty"><h3>加载失败</h3><p>' + escapeHtml(err.message) + '</p><a class="button" href="index.html">返回社区</a> <button class="button ghost-button" onclick="location.reload()">重试</button></div>';
+        });
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      loadPost();
+    });
+  })();
+  </script>
+</body>
+</html>

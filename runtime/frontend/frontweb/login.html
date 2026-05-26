@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>唤语 - 登录</title>
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="stylesheet" href="static/font-awesome//4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="app/css/huanyu-app.css">
+</head>
+<body class="huanyu-app">
+  <main class="login-shell">
+    <section class="login-card">
+      <a class="brand login-brand" href="index.html"><img src="img/Logogo.png" alt="唤语"><span>唤语</span></a>
+      <div class="login-copy">
+        <p class="eyebrow">Account Access</p>
+        <h1>登录或注册唤语账号</h1>
+        <p>账号信息保存在服务器端。游客只能浏览公开页面，手语识别、学习课程、闯关和发帖需要登录。</p>
+      </div>
+
+      <form class="login-form" id="login-form">
+        <label for="login-account">用户名</label>
+        <input id="login-account" name="account" type="text" autocomplete="username" placeholder="输入用户名">
+
+        <label for="login-password">密码</label>
+        <input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="设置或输入密码">
+
+        <p class="login-message" id="login-message" aria-live="polite">没有账号可以直接注册。</p>
+        <button class="button login-submit" type="submit"><i class="fa fa-sign-in"></i> 登录</button>
+        <button class="ghost-button login-submit" id="login-register-button" type="button"><i class="fa fa-user-plus"></i> 注册并登录</button>
+      </form>
+
+      <div class="login-shortcuts">
+        <a href="index.html">游客浏览首页</a>
+        <a href="questions/index.html">游客浏览社区</a>
+        <a class="login-game-entry" href="game/hand-particles/index.html">
+          <i class="fa fa-magic"></i>
+          <span>游客体验双手粒子游戏</span>
+        </a>
+      </div>
+    </section>
+    <aside class="login-panel">
+      <a class="login-panel-logo" href="index.html" aria-label="返回唤语首页">
+        <img src="img/Logogo.png" alt="唤语">
+      </a>
+      <div><span>识别链路</span><strong>Video -> Gloss -> 中文</strong></div>
+      <div><span>练习闭环</span><strong>闯关评分 + 学习记录</strong></div>
+      <div><span>辅助沟通</span><strong>TTS 播报 + 回复建议</strong></div>
+    </aside>
+  </main>
+  <script src="app/js/huanyu-auth.js"></script>
+  <script src="app/js/huanyu-login.js"></script>
+</body>
+</html>

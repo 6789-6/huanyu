@@ -1,0 +1,100 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>唤语 - 手语识别与辅助沟通平台</title>
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="stylesheet" href="static/font-awesome//4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="app/css/huanyu-app.css">
+</head>
+<body class="huanyu-app">
+  <header class="app-topbar">
+    <div class="app-shell app-nav">
+      <a class="brand" href="index.html"><img src="img/Logogo.png" alt="唤语"><span>唤语</span></a>
+      <nav class="nav-links" aria-label="主导航">
+        <a class="active" href="index.html">首页</a>
+        <a href="translate.html">手语翻译</a>
+        <a href="paths/index.html">闯关学习</a>
+        <a href="developer/index.html">学习课程</a>
+        <a href="questions/index.html">社区讨论</a>
+        <a href="game/hand-particles/index.html">手势游戏</a>
+        <a href="user/13/study.html">学习记录</a>
+      </nav>
+      <a class="nav-action" href="login.html">登录 / 进入</a>
+    </div>
+  </header>
+
+  <main class="page-main app-shell">
+    <section class="hero-panel">
+      <div class="hero-copy">
+        <p class="eyebrow">HuanYu Assistive Sign Platform</p>
+        <h1>把手语识别、翻译和训练关卡放进同一个工作台</h1>
+        <p class="lead">面向课堂演示和辅助沟通场景，唤语现在提供视频上传识别、E2E 闯关评测、TTS 播报、对话推荐和学习记录入口。</p>
+        <div class="hero-actions">
+          <a class="button" href="translate.html"><i class="fa fa-video-camera"></i> 上传视频翻译</a>
+          <a class="button secondary" href="paths/index.html"><i class="fa fa-flag-checkered"></i> 进入闯关</a>
+          <a class="ghost-button" href="game/hand-particles/index.html"><i class="fa fa-magic"></i> 游客体验手势游戏</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="signal-board">
+          <div><span>识别链路</span><strong>Video -> Gloss</strong></div>
+          <div><span>中文输出</span><strong>G2T / E2E</strong></div>
+          <div><span>辅助能力</span><strong>TTS 播报</strong></div>
+          <div><span>训练任务</span><strong>闯关评分</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-grid">
+      <a class="card" href="translate.html">
+        <span class="card-icon"><i class="fa fa-language"></i></span>
+        <h2>手语翻译</h2>
+        <p>上传视频或运行精选样本，展示 gloss、中文结果、模型状态和质量降级原因。</p>
+        <span class="badge">Flask API</span>
+      </a>
+      <a class="card" href="paths/index.html">
+        <span class="card-icon"><i class="fa fa-trophy"></i></span>
+        <h2>E2E 闯关</h2>
+        <p>每个关卡用目标 gloss 和中文评分，优先调用 `best_e2e_by_wer.pt`。</p>
+        <span class="badge warn">WER 69.42%</span>
+      </a>
+      <a class="card" href="developer/index.html">
+        <span class="card-icon"><i class="fa fa-book"></i></span>
+        <h2>学习课程</h2>
+        <p>围绕问候、求助、购物、医疗和出行等高频场景组织课程入口。</p>
+        <span class="badge">课程化</span>
+      </a>
+      <a class="card game-card" href="game/hand-particles/index.html">
+        <span class="card-icon"><i class="fa fa-hand-paper-o"></i></span>
+        <h2>双手粒子游戏</h2>
+        <p>无需登录即可体验摄像头手势识别，用双手控制科幻粒子星云、传送门和能量场。</p>
+        <span class="badge">Guest Play</span>
+      </a>
+    </section>
+
+    <section class="two-col">
+      <div class="panel">
+        <div class="panel-heading"><span>当前主线</span><strong>演示闭环</strong></div>
+        <ul class="activity-list">
+          <li><strong>视频翻译</strong><small>网页端和树莓派端共用 `/api/recognition/upload`。</small></li>
+          <li><strong>E2E 闯关</strong><small>新增 `/api/e2e/challenge/*`，支持录制、上传和评分。</small></li>
+          <li><strong>辅助沟通</strong><small>翻译结果可以进入情绪分析、回复推荐和语音播报。</small></li>
+        </ul>
+      </div>
+      <aside class="panel">
+        <div class="panel-heading"><span>模型说明</span><strong>透明展示</strong></div>
+        <ul class="status-list">
+          <li><strong>关键词 MVP</strong><small>稳定演示路线。</small></li>
+          <li><strong>CorrNet + G2T</strong><small>用于通用视频翻译页面。</small></li>
+          <li><strong>Direct E2E CTC</strong><small>用于闯关 gloss 评测，识别失败会明确标记 fallback。</small></li>
+        </ul>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="app-footer">Copyright @2025-2026 唤语</footer>
+  <script src="app/js/huanyu-auth.js"></script>
+</body>
+</html>

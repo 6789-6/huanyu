@@ -1,0 +1,137 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>唤语 - 手语翻译工作台</title>
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="stylesheet" href="static/font-awesome//4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="app/css/huanyu-app.css">
+</head>
+<body class="huanyu-app">
+  <header class="app-topbar">
+    <div class="app-shell app-nav">
+      <a class="brand" href="index.html"><img src="img/Logogo.png" alt="唤语"><span>唤语</span></a>
+      <nav class="nav-links" aria-label="主导航">
+        <a href="index.html">首页</a>
+        <a class="active" href="translate.html">手语翻译</a>
+        <a href="paths/index.html">闯关学习</a>
+        <a href="developer/index.html">学习课程</a>
+        <a href="questions/index.html">社区讨论</a>
+        <a href="user/13/study.html">学习记录</a>
+      </nav>
+      <a class="nav-action" href="#status-panel">模型状态</a>
+    </div>
+  </header>
+
+  <main class="page-main app-shell translate-shell">
+    <section class="page-title">
+      <p class="eyebrow">Video Sign Translation</p>
+      <h1>手语翻译工作台</h1>
+      <p>上传视频或运行精选样本，实时查看中文结果、gloss、质量闸门、对话推荐和 TTS 播报。</p>
+    </section>
+
+    <section class="translate-workspace">
+      <section class="capture-panel">
+        <div class="panel-heading"><span>视频输入</span><strong id="pipeline-state">待处理</strong></div>
+        <div class="video-frame">
+          <video id="preview-video" controls playsinline></video>
+          <div id="video-empty" class="video-empty">
+            <i class="fa fa-video-camera" aria-hidden="true"></i>
+            <span>等待视频输入</span>
+          </div>
+        </div>
+        <div class="capture-meta">
+          <span id="file-name">未选择文件</span>
+          <div class="hero-actions" style="margin:0">
+            <label class="upload-button" for="video-input"><i class="fa fa-upload"></i> 选择视频</label>
+            <input id="video-input" type="file" accept="video/*">
+            <button id="demo-button" class="ghost-button" type="button"><i class="fa fa-play-circle"></i> 演示</button>
+            <button id="translate-button" type="button">开始翻译</button>
+          </div>
+        </div>
+        <div class="translate-status-grid" aria-live="polite">
+          <div><span>输入状态</span><strong id="input-status">等待视频</strong></div>
+          <div><span>上传进度</span><strong id="upload-progress">待提交</strong></div>
+          <div><span>服务状态</span><strong id="service-state">未检测</strong></div>
+        </div>
+        <div class="realtime-panel">
+          <div class="panel-heading"><span>实时识别</span><strong id="realtime-status">待启动</strong></div>
+          <div class="hero-actions realtime-actions" style="margin:0">
+            <button id="realtime-start-button" class="secondary-action" type="button"><i class="fa fa-camera"></i> 打开实时识别</button>
+            <button id="realtime-stop-button" class="ghost-button" type="button" disabled><i class="fa fa-stop"></i> 停止</button>
+          </div>
+          <div class="realtime-grid" aria-live="polite">
+            <div class="realtime-output"><span>关键词</span><strong id="realtime-keywords">--</strong></div>
+            <div class="realtime-output"><span>稳定句子</span><strong id="realtime-sentence">等待摄像头输入</strong></div>
+            <div class="realtime-output"><span>模型</span><strong id="realtime-model">keyword realtime</strong></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="result-panel">
+        <div class="result-toolbar">
+          <div><span>翻译结果</span><strong>主输出</strong></div>
+          <span class="badge" id="service-output">演示模式</span>
+        </div>
+        <div class="translation-output" id="translation-output">请选择视频或载入演示。</div>
+        <div class="gloss-row"><span>Gloss</span><p id="gloss-output">-</p></div>
+        <div class="quality-row" id="quality-row" hidden>
+          <div><span>输出策略</span><strong id="quality-output">-</strong></div>
+          <div id="raw-text-block"><span>原始 G2T</span><p id="raw-text-output">-</p></div>
+        </div>
+        <div class="reference-row" id="reference-row" hidden>
+          <span>参考句</span><p id="reference-output">-</p><small id="reference-gloss-output">-</small>
+        </div>
+        <div class="confidence-strip">
+          <div><span>识别置信度</span><strong id="confidence-output">--</strong></div>
+          <div><span>预计延迟</span><strong id="latency-output">--</strong></div>
+          <div><span>服务状态</span><strong id="result-service-state">可请求</strong></div>
+        </div>
+        <div class="voice-panel">
+          <div class="voice-control">
+            <label for="voice-select">语音播报</label>
+            <select id="voice-select"><option value="">加载音色中</option></select>
+          </div>
+          <button id="tts-button" class="secondary-action" type="button" disabled><i class="fa fa-volume-up"></i> 播报</button>
+        </div>
+        <audio id="tts-audio" controls hidden></audio>
+        <p id="tts-state">等待翻译结果</p>
+      </section>
+    </section>
+
+    <section class="two-col" style="margin-top:18px">
+      <aside class="side-panel" id="status-panel">
+        <div class="panel-heading"><span>模型状态</span><strong>已接入</strong></div>
+        <ul class="status-list">
+          <li><strong>视觉识别</strong><small>CorrNet pretrained，本地视频存在域差异。</small></li>
+          <li><strong>翻译后处理</strong><small>G2T + 质量闸门，短 gloss 优先保守输出。</small></li>
+          <li><strong>树莓派路径</strong><small>采集端和网页端共用 Flask 服务。</small></li>
+        </ul>
+        <div class="panel-heading" style="margin-top:16px"><span>精选样本</span><strong id="demo-sample-state">加载中</strong></div>
+        <ul id="demo-sample-list" class="demo-sample-list"><li><span>正在加载样本</span></li></ul>
+        <div class="result-box"><label>树莓派设备</label><strong id="device-state">设备状态不可用</strong></div>
+        <button id="guardian-alert-button" class="alert-button" type="button"><i class="fa fa-bell"></i> 一键提示</button>
+      </aside>
+
+      <section class="history-panel" id="dialogue-panel">
+        <div class="panel-heading"><span>对话助手</span><strong>情绪与回复</strong></div>
+        <div class="result-box"><label>情绪判断</label><strong id="emotion-output">待分析</strong><p id="analysis-output">翻译结果出现后会同步分析当前对话。</p></div>
+        <button id="analyze-dialogue-button" class="analysis-button" type="button" disabled><i class="fa fa-refresh"></i> 重新分析</button>
+        <div class="panel-heading" style="margin-top:16px"><span>智能回复</span><strong>推荐语句</strong></div>
+        <ul id="recommendation-list" class="history-list">
+          <li><strong>好的，我明白了。</strong><small>可用于快速语音播报。</small></li>
+        </ul>
+        <div class="panel-heading" style="margin-top:16px"><span>对话记录</span><strong>最近记录</strong></div>
+        <ul id="history-list" class="history-list">
+          <li><strong>暂无记录</strong><small>完成一次翻译后会显示在这里。</small></li>
+        </ul>
+      </section>
+    </section>
+  </main>
+
+  <footer class="app-footer">Copyright @2025-2026 唤语</footer>
+  <script src="app/js/huanyu-auth.js"></script>
+  <script src="app/js/huanyu-translate.js?v=20260518-auth"></script>
+</body>
+</html>

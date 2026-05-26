@@ -1,0 +1,31 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>唤语 - 关于与隐私</title>
+  <link rel="stylesheet" href="../app/css/huanyu-app.css">
+</head>
+<body class="huanyu-app">
+  <header class="app-topbar">
+    <div class="app-shell app-nav">
+      <a class="brand" href="../index.html"><img src="../img/Logogo.png" alt="唤语"><span>唤语</span></a>
+      <nav class="nav-links"><a href="../index.html">首页</a><a href="../translate.html">手语翻译</a><a href="../paths/index.html">闯关学习</a><a href="../developer/index.html">学习课程</a><a href="../questions/index.html">社区讨论</a></nav>
+      <a class="nav-action" href="../index.html">返回首页</a>
+    </div>
+  </header>
+  <main class="page-main app-shell">
+    <section class="page-title">
+      <p class="eyebrow">About & Privacy</p>
+      <h1>关于唤语</h1>
+      <p>唤语是面向手语学习与辅助沟通的演示平台，当前快照包含翻译工作台、E2E 闯关评测和学习记录页面。</p>
+    </section>
+    <section class="two-col">
+      <div class="panel"><div class="panel-heading"><span>数据说明</span><strong>本地优先</strong></div><p>网页上传的视频会发送到本机 Flask 服务进行推理，当前快照不接入外部云端账号系统。</p><p>浏览器保存的闯关分数使用 localStorage，仅用于本机演示。</p></div>
+      <aside class="panel"><div class="panel-heading"><span>项目状态</span><strong>快照版</strong></div><ul class="status-list"><li><strong>前端</strong><small>已重构为统一工作台风格。</small></li><li><strong>后端</strong><small>Flask API 提供识别、对话、TTS、E2E 闯关接口。</small></li></ul></aside>
+    </section>
+  </main>
+  <footer class="app-footer">Copyright @2025-2026 唤语</footer>
+  <script src="../app/js/huanyu-auth.js"></script>
+</body>
+</html>
